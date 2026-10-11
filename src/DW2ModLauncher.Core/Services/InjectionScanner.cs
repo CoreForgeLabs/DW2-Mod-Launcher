@@ -172,7 +172,35 @@ namespace DW2ModLauncher.Core.Services
                         TypeAttributes attrs = type.Attributes;
                         if ((attrs & TypeAttributes.VisibilityMask) != TypeAttributes.Public) continue;
                         if ((attrs & TypeAttributes.Abstract) == 0 || (attrs & TypeAttributes.Sealed) == 0) continue;
-                        if (HasPublicStaticMethod(md, type, "InitWithOptions", 1)) return true;
+                        if (HasPublicStaticMethod(md, type, "InitWithOptions", 1) || HasPublicStaticMethod(md, type, "InitWithOptions", 2)) return true;
+                    }
+                }
+            }
+            catch (BadImageFormatException) { }
+            return false;
+        }
+
+        /// <summary>
+        /// True when the DLL's qualifying Entry class has InitWithOptions(string, IReadOnlyDictionary&lt;string, string&gt;), the one that receives
+        /// the files a mod asked of the mods it depends on. (Only the parameter count is checked; the loader looks for the exact types.)
+        /// </summary>
+        public static bool AcceptsFiles(string dllPath)
+        {
+            try
+            {
+                using (FileStream stream = File.OpenRead(dllPath))
+                using (PEReader pe = new PEReader(stream))
+                {
+                    if (!pe.HasMetadata) return false;
+                    MetadataReader md = pe.GetMetadataReader();
+                    foreach (TypeDefinitionHandle handle in md.TypeDefinitions)
+                    {
+                        TypeDefinition type = md.GetTypeDefinition(handle);
+                        if (md.GetString(type.Name) != EntryTypeName) continue;
+                        TypeAttributes attrs = type.Attributes;
+                        if ((attrs & TypeAttributes.VisibilityMask) != TypeAttributes.Public) continue;
+                        if ((attrs & TypeAttributes.Abstract) == 0 || (attrs & TypeAttributes.Sealed) == 0) continue;
+                        if (HasPublicStaticMethod(md, type, "InitWithOptions", 2)) return true;
                     }
                 }
             }
@@ -182,7 +210,7 @@ namespace DW2ModLauncher.Core.Services
 
         private static bool HasInitMethod(MetadataReader md, TypeDefinition type)
         {
-            return HasPublicStaticMethod(md, type, "Init", 0) || HasPublicStaticMethod(md, type, "InitWithOptions", 1);
+            return HasPublicStaticMethod(md, type, "Init", 0) || HasPublicStaticMethod(md, type, "InitWithOptions", 1) || HasPublicStaticMethod(md, type, "InitWithOptions", 2);
         }
 
         private static bool HasPublicStaticMethod(MetadataReader md, TypeDefinition type, string name, int parameters)

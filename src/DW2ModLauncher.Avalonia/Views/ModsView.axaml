@@ -106,7 +106,7 @@
       <Panel>
       <TextBlock IsVisible="{Binding !HasSelection}" Text="{Binding L[SelectModForDetails]}" Foreground="{StaticResource Dw2Gold}"
                  FontSize="18" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" />
-      <Grid IsVisible="{Binding HasSelection}" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*">
+      <Grid IsVisible="{Binding HasSelection}" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*">
         <Border Name="PreviewBorder" Grid.Row="0" Background="{StaticResource Dw2Void}" Height="240">
           <Image Source="{Binding Preview}" Stretch="Uniform" Cursor="Hand" />
         </Border>
@@ -118,8 +118,10 @@
         <Border Grid.Row="3" IsVisible="{Binding HasProblems}" Classes="problems" Classes.conflict="{Binding ProblemsIsConflict}" Padding="10,8" Margin="0,0,0,8">
           <TextBlock TextWrapping="Wrap" FontWeight="SemiBold" Text="{Binding ProblemsText}" Foreground="{Binding $parent[Border].Tag}" />
         </Border>
-        <Border Grid.Row="4" Height="1" Background="{StaticResource Dw2Blue}" Margin="0,0,0,10" />
-        <ScrollViewer Grid.Row="5">
+        <SelectableTextBlock Grid.Row="4" IsVisible="{Binding HasLinks}" TextWrapping="Wrap" Foreground="{StaticResource Dw2Muted}" Margin="0,0,0,10"
+                             Text="{Binding DetailLinks}" />
+        <Border Grid.Row="5" Height="1" Background="{StaticResource Dw2Blue}" Margin="0,0,0,10" />
+        <ScrollViewer Grid.Row="6">
           <SelectableTextBlock TextWrapping="Wrap" Foreground="{StaticResource Dw2Muted}" Text="{Binding DetailText}" />
         </ScrollViewer>
       </Grid>

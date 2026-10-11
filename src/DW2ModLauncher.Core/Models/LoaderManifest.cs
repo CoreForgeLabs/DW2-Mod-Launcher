@@ -68,6 +68,8 @@ namespace DW2ModLauncher.Core.Models
         public string HostDllPath { get; set; }
         public string EntryType { get; set; }
         public string SettingsJson { get; set; }
+        /// <summary>Text files of the mods this mod depends on that it asked for (dw2modlauncher.json "dependencies" "needs"), keyed "mod/file name" as the mod wrote them; passed as the second argument of InitWithOptions(string, IReadOnlyDictionary).</summary>
+        public Dictionary<string, string> Files { get; set; } = new Dictionary<string, string>();
         public string DisplayName { get; set; }
     }
 }

@@ -23,7 +23,7 @@ namespace DW2ModLauncher.Core.Services
                 string modRoot = mod.ContentRoot ?? mod.Folder;
                 manifest.ModFolders.Add(LeafName(mod.Folder ?? modRoot));
                 foreach (InjectionTarget target in InjectionScanner.TargetsFor(mod))
-                    AddEntry(manifest, seen, mod, modRoot, target.Dll, target.EntryPoint);
+                    AddEntry(manifest, seen, mod, modRoot, target.Dll, target.EntryPoint, orderedEnabledMods);
                 AddPatches(manifest, mod, modRoot, manifest.ModFolders.Count - 1);
             }
             manifest.Fonts.AddRange(FontsOf(orderedEnabledMods));
@@ -161,7 +161,7 @@ namespace DW2ModLauncher.Core.Services
             manifest.Patches.Add(set);
         }
 
-        private static void AddEntry(LoaderManifest manifest, HashSet<string> seen, ModInfo mod, string modRoot, string dllRelative, string entryPoint)
+        private static void AddEntry(LoaderManifest manifest, HashSet<string> seen, ModInfo mod, string modRoot, string dllRelative, string entryPoint, IList<ModInfo> enabled)
         {
             if (string.IsNullOrWhiteSpace(modRoot) || string.IsNullOrWhiteSpace(dllRelative) || string.IsNullOrWhiteSpace(entryPoint)) return;
             string full = Path.GetFullPath(Path.Combine(modRoot, dllRelative.Replace('/', Path.DirectorySeparatorChar)));
@@ -178,6 +178,7 @@ namespace DW2ModLauncher.Core.Services
                 HostDllPath = full,
                 EntryType = entryPoint,
                 SettingsJson = settingsJson,
+                Files = ModChannels.FilesFor(mod, enabled),
                 DisplayName = mod.DisplayName ?? mod.Id
             });
         }

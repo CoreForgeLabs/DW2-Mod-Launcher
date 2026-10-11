@@ -11,6 +11,45 @@ namespace DW2ModLauncher.Core.Services
     /// <summary>The text shown in a mod's details panel. Localised through the supplied lookup. No UI.</summary>
     public static class ModDetails
     {
+        /// <summary>
+        /// What the mod declares in dw2modlauncher.json about other mods, as "label: value" lines with who is on the other end among the enabled mods (in load order):
+        /// the channels it receives and who supplies them, the channels it provides and who receives them, and its dependencies.
+        /// Empty when it declares nothing.
+        /// </summary>
+        public static string BuildLinks(ModInfo mod, IList<ModInfo> orderedEnabled)
+        {
+            List<string> lines = new List<string>();
+            Func<IEnumerable<ModInfo>, string> names = mods => string.Join(", ", mods.Select(m => m.DisplayName ?? m.Id));
+            foreach (string channel in (mod.Receives ?? new List<string>()).Where(c => !string.IsNullOrWhiteSpace(c)).Select(c => c.Trim()).Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                List<ModInfo> providers = orderedEnabled.Where(m => m != mod && (m.Provides ?? new List<LauncherProvision>())
+                    .Any(p => p != null && string.Equals(p.channel?.Trim(), channel, StringComparison.OrdinalIgnoreCase))).ToList();
+                lines.Add("Receives: " + channel);
+                lines.Add("Providers: " + (providers.Count == 0 ? "none enabled" : names(providers)));
+            }
+            foreach (LauncherProvision provision in mod.Provides ?? new List<LauncherProvision>())
+            {
+                if (provision == null || string.IsNullOrWhiteSpace(provision.channel)) continue;
+                string channel = provision.channel.Trim();
+                List<ModInfo> receivers = orderedEnabled.Where(m => m != mod && (m.Receives ?? new List<string>())
+                    .Any(c => string.Equals(c?.Trim(), channel, StringComparison.OrdinalIgnoreCase))).ToList();
+                lines.Add("Provides: " + channel);
+                lines.Add("Receivers: " + (receivers.Count == 0 ? "none enabled" : names(receivers)));
+            }
+            foreach (LauncherDependency dep in mod.Dependencies ?? new List<LauncherDependency>())
+            {
+                if (dep == null || string.IsNullOrWhiteSpace(dep.mod)) continue;
+                List<string> parts = new List<string>();
+                parts.Add(dep.required ? "required" : "optional");
+                if (!string.IsNullOrWhiteSpace(dep.minVersion)) parts.Add("min " + dep.minVersion.Trim());
+                if (dep.loadAfter) parts.Add("loads after");
+                if (dep.loadBefore) parts.Add("loads before");
+                lines.Add("Depends on: " + dep.mod.Trim() + " (" + string.Join(", ", parts) + ")");
+                lines.Add("Status: " + (ModDependencies.Find(orderedEnabled, dep.mod) == null ? "not enabled" : "enabled"));
+            }
+            return string.Join("\n", lines);
+        }
+
         public static string BuildText(ModInfo mod, bool isSelected, Func<string, string> t)
         {
             StringBuilder b = new StringBuilder();
@@ -35,11 +74,6 @@ namespace DW2ModLauncher.Core.Services
                 b.AppendLine(t("IncludedDocuments") + mod.IncludedDocuments.Count);
                 foreach (string document in mod.IncludedDocuments) b.AppendLine("  • " + document);
             }
-            if (mod.RequiredMods != null && mod.RequiredMods.Count > 0) b.AppendLine("Required: " + string.Join(", ", mod.RequiredMods.ToArray()));
-            if (mod.OptionalMods != null && mod.OptionalMods.Count > 0) b.AppendLine("Optional: " + string.Join(", ", mod.OptionalMods.ToArray()));
-            if (mod.IncompatibleMods != null && mod.IncompatibleMods.Count > 0) b.AppendLine("Incompatible: " + string.Join(", ", mod.IncompatibleMods.ToArray()));
-            if (mod.LoadBefore != null && mod.LoadBefore.Count > 0) b.AppendLine("LoadBefore: " + string.Join(", ", mod.LoadBefore.ToArray()));
-            if (mod.LoadAfter != null && mod.LoadAfter.Count > 0) b.AppendLine("LoadAfter: " + string.Join(", ", mod.LoadAfter.ToArray()));
 
             if (isSelected && mod.ConflictFiles != null && mod.ConflictFiles.Count > 0)
             {
@@ -110,7 +144,7 @@ namespace DW2ModLauncher.Core.Services
             if (mod.IdenticalFileCount > 0) lines.Add(t("SamePathAndIdenticalContent") + mod.IdenticalFileCount);
             if (mod.IsWorkshop && mod.UpdateState == "update") lines.Add(t("SteamWorkshopUpdateAvailable"));
             if (LauncherRequirement.IsUnmet(mod)) lines.Add(t("LauncherTooOld") + mod.MinLauncherVersion + " (" + AppVersion.Display + ")");
-            if (mod.ModJsonError != null) lines.Add("mod.json is not valid JSON, so this mod's dependencies and load order hints were not read: " + mod.ModJsonError);
+            if (mod.ModJsonError != null) lines.Add("mod.json is not valid JSON: " + mod.ModJsonError);
             return lines;
         }
     }

@@ -41,6 +41,7 @@ namespace DW2ModLauncher.Loader
         public string DllPath { get; set; }
         public string EntryType { get; set; }
         public string SettingsJson { get; set; }
+        public Dictionary<string, string> Files { get; set; } = new Dictionary<string, string>();
         public string DisplayName { get; set; }
     }
 }
