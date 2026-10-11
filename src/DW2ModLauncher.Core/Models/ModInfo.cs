@@ -31,7 +31,7 @@ namespace DW2ModLauncher.Core.Models
         public List<string> ConflictMods { get; set; }
         public List<string> ConflictPathCache { get; set; }
         public string ModJsonPath { get; set; }
-        /// <summary>Why mod.json could not be parsed (its dependencies and load order hints were then not read), or null when it parsed.</summary>
+        /// <summary>Why mod.json could not be parsed (its display name and description were then recovered loosely), or null when it parsed.</summary>
         public string ModJsonError { get; set; }
         /// <summary>Why the mod's files could not be scanned for conflicts (so none are reported for it), or null.</summary>
         public string ScanError { get; set; }
@@ -41,13 +41,14 @@ namespace DW2ModLauncher.Core.Models
         public string WorkshopId { get; set; }
         public List<string> IncludedTools { get; set; }
         public List<string> IncludedDocuments { get; set; }
-        public List<string> RequiredMods { get; set; }
-        public List<string> OptionalMods { get; set; }
-        public List<string> IncompatibleMods { get; set; }
-        public List<string> LoadBefore { get; set; }
-        public List<string> LoadAfter { get; set; }
         /// <summary>dw2modlauncher.json "minLauncherVersion", or null/empty when the mod names no floor.</summary>
         public string MinLauncherVersion { get; set; }
+        /// <summary>dw2modlauncher.json "dependencies" (empty when the mod names none).</summary>
+        public List<LauncherDependency> Dependencies { get; set; } = new List<LauncherDependency>();
+        /// <summary>dw2modlauncher.json "provides" (empty when the mod supplies nothing).</summary>
+        public List<LauncherProvision> Provides { get; set; } = new List<LauncherProvision>();
+        /// <summary>dw2modlauncher.json "receives" (empty when the mod's DLL takes no channels).</summary>
+        public List<string> Receives { get; set; } = new List<string>();
         public int IdenticalFileCount { get; set; }
         public int LowRiskConflictCount { get; set; }
         public int HighRiskConflictCount { get; set; }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -177,6 +178,15 @@ namespace DW2ModLauncher.Loader
                 {
                     Log("SKIP " + label + ": type '" + typeName + "' not found in " + entry.DllPath);
                     ModStatus.Registry.ReportLoad(id, id, version, built, "type '" + typeName + "' not found");
+                    return;
+                }
+
+                MethodInfo withFiles = type.GetMethod("InitWithOptions", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string), typeof(IReadOnlyDictionary<string, string>) }, null);
+                if (withFiles != null)
+                {
+                    withFiles.Invoke(null, new object[] { entry.SettingsJson ?? "{}", entry.Files ?? new Dictionary<string, string>() });
+                    Log("OK " + label + ": called InitWithOptions(string, IReadOnlyDictionary<string, string>) with " + (entry.Files == null ? 0 : entry.Files.Count) + " file(s).");
+                    ModStatus.Registry.ReportLoad(id, id, version, built, null);
                     return;
                 }
 

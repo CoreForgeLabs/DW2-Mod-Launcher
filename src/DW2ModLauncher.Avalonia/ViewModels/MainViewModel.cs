@@ -252,6 +252,12 @@ namespace DW2ModLauncher.Avalonia.ViewModels
         public string DetailText { get { return detailText; } private set { Set(ref detailText, value); } }
         public string DetailSource { get { return detailSource; } private set { Set(ref detailSource, value); } }
         public string DetailWorkshopId { get { return detailWorkshopId; } private set { Set(ref detailWorkshopId, value); } }
+
+        private string detailLinks = "";
+        /// <summary>What the selected mod provides, receives and depends on, with who is on the other end (ModDetails.BuildLinks).</summary>
+        public string DetailLinks { get { return detailLinks; } private set { if (Set(ref detailLinks, value)) Raise(nameof(HasLinks)); } }
+        public bool HasLinks { get { return !string.IsNullOrEmpty(detailLinks); } }
+
         public string ProblemsText { get { return problemsText; } private set { Set(ref problemsText, value); Raise(nameof(HasProblems)); } }
         public bool HasProblems { get { return !string.IsNullOrEmpty(problemsText); } }
         public bool ProblemsIsConflict { get { return problemsIsConflict; } private set { Set(ref problemsIsConflict, value); } }
@@ -367,7 +373,7 @@ namespace DW2ModLauncher.Avalonia.ViewModels
                 workshopMods = new List<ModInfo>();
             }
             foreach (ModInfo bad in managedMods.Concat(workshopMods).Where(m => m.ModJsonError != null))
-                AddProblem(bad.DisplayName + ": mod.json is not valid JSON, so its dependencies and load order hints were not read.\n" + bad.ModJsonError);
+                AddProblem(bad.DisplayName + ": mod.json is not valid JSON.\n" + bad.ModJsonError);
             ModLibrary.RestoreWorkshopRuntimeState(workshopMods, workshopState);
             managedMods = ModLibrary.OrderForDisplay(managedMods, modOrder);
             workshopMods = ModLibrary.OrderForDisplay(workshopMods, modOrder);
@@ -584,6 +590,7 @@ namespace DW2ModLauncher.Avalonia.ViewModels
                 DetailText = "";
                 DetailSource = "";
                 DetailWorkshopId = "";
+                DetailLinks = "";
                 ProblemsText = "";
                 Preview = null;
                 return;
@@ -595,6 +602,7 @@ namespace DW2ModLauncher.Avalonia.ViewModels
             DetailText = ModDetails.BuildText(mod, selected, key => T(key));
             DetailSource = T("Source") + ": " + ModDetails.SourceText(mod, settings.ManagedModsRoot);
             DetailWorkshopId = T("PublishWorkshopId") + ": " + (ModDetails.WorkshopId(mod) ?? T("PublishWorkshopIdUnpublished"));
+            DetailLinks = ModDetails.BuildLinks(mod, OrderedEnabledMods());
             List<string> problems = ModDetails.BuildProblems(mod, severity, key => T(key));
             ProblemsIsConflict = severity == 3;
             ProblemsText = problems.Count == 0 ? "" : (severity == 3 ? T("HealthConflict") : T("HealthCaution")) + "\n" + string.Join("\n", problems);
@@ -1431,12 +1439,20 @@ namespace DW2ModLauncher.Avalonia.ViewModels
             Settings.CommitToSettings();
             Analyze();
             RefreshRowStates();
+            // dw2modlauncher.json dependency rules decide the load order: put the enabled mods in an order that meets them (and mods.json with it)
+            ModLibrary.DependencyOrderResult dependencyOrder = ModLibrary.ApplyDependencyOrder(OrderedEnabledMods(), settings, modOrder);
+            if (dependencyOrder.Written)
+            {
+                Logger.Log("Load order", "Moved to meet dependency rules: " + string.Join("; ", dependencyOrder.Moves));
+                RebuildRows();
+            }
             List<ModInfo> enabled = AllMods.Where(IsSelected).ToList();
             List<string> diagnostics;
             try
             {
                 diagnostics = LaunchDiagnostics.Build(enabled, modOrder, GameLauncher.LoaderDllPath(),
                     LoaderManifestBuilder.Build(OrderedEnabledMods()).Entries, key => T(key));
+                diagnostics.AddRange(dependencyOrder.Problems.Select(p => "⚠ " + p));
             }
             catch (Exception ex)
             {
@@ -1458,9 +1474,10 @@ namespace DW2ModLauncher.Avalonia.ViewModels
             if (!await Settings.ConfirmSaveForLaunchAsync()) return;
             try
             {
+                foreach (string line in ModChannels.Describe(OrderedEnabledMods())) Logger.Log("Channel data", line);
                 LoaderManifest launchManifest = GameLauncher.WriteLoaderManifest(OrderedEnabledMods(), settings.LogDirectory);
                 Process.Start(GameLauncher.BuildStartInfo(settings.GameRoot, GameLauncher.BuildArguments(LaunchMode, launchManifest.Fonts.LastOrDefault()?.Name)));
-                SetStatus(T("DistantWorlds2Launched"));
+                SetStatus(T("DistantWorlds2Launched") + (dependencyOrder.Written ? " (load order adjusted to meet mod dependencies: " + string.Join("; ", dependencyOrder.Moves) + ")" : ""));
                 launchStartedUtc = DateTime.UtcNow;
                 SetGameState(GameState.Launching);
             }

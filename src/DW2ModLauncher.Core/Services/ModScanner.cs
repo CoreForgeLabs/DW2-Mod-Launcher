@@ -82,11 +82,6 @@ namespace DW2ModLauncher.Core.Services
             m.UpdateState = workshop ? "unknown" : "na";
             m.ConflictFiles = new List<string>();
             m.ConflictMods = new List<string>();
-            m.RequiredMods = new List<string>();
-            m.OptionalMods = new List<string>();
-            m.IncompatibleMods = new List<string>();
-            m.LoadBefore = new List<string>();
-            m.LoadAfter = new List<string>();
             m.IncludedTools = new List<string>();
             m.IncludedDocuments = new List<string>();
             m.ModJsonPath = modJson;
@@ -103,19 +98,14 @@ namespace DW2ModLauncher.Core.Services
                     Dictionary<string, object> d = rootObj as Dictionary<string, object>;
                     if (d != null)
                     {
-                        m.DisplayName = LooseJson.GetString(d, new string[] { "displayName", "name", "title" }, m.DisplayName);
-                        m.Description = LooseJson.GetString(d, new string[] { "description", "shortDescription", "summary" }, "");
+                        m.DisplayName = LooseJson.GetString(d, new string[] { "displayName" }, m.DisplayName);
+                        m.Description = LooseJson.GetString(d, new string[] { "description", "shortDescription" }, "");
                         descriptionFile = LooseJson.GetString(d, new string[] { "descriptionFile" }, "");
-                        m.Version = LooseJson.GetString(d, new string[] { "version", "modVersion" }, "");
-                        preview = LooseJson.GetString(d, new string[] { "previewImage", "preview", "thumbnail", "icon" }, "");
-                        string wid = LooseJson.GetString(d, new string[] { "workshopId", "workshopID" }, "");
+                        m.Version = LooseJson.GetString(d, new string[] { "version" }, "");
+                        preview = LooseJson.GetString(d, new string[] { "previewImage" }, "");
+                        string wid = LooseJson.GetString(d, new string[] { "workshopId" }, "");
                         if (!string.IsNullOrWhiteSpace(wid)) m.WorkshopId = wid;
                         if (workshop && !Regex.IsMatch(m.Id ?? "", "^\\d+$") && !string.IsNullOrWhiteSpace(wid)) m.Id = wid;
-                        m.RequiredMods = LooseJson.GetStringList(d, new string[] { "Required", "required", "requires" });
-                        m.OptionalMods = LooseJson.GetStringList(d, new string[] { "Optional", "optional" });
-                        m.IncompatibleMods = LooseJson.GetStringList(d, new string[] { "Incompatible", "incompatible", "conflicts" });
-                        m.LoadBefore = LooseJson.GetStringList(d, new string[] { "LoadBefore", "loadBefore" });
-                        m.LoadAfter = LooseJson.GetStringList(d, new string[] { "LoadAfter", "loadAfter" });
                     }
                 }
                 catch (Exception ex)
@@ -150,7 +140,11 @@ namespace DW2ModLauncher.Core.Services
             m.DescriptionOverride = ReadDescriptionFile(m.ContentRoot, descriptionFile) ?? ReadDescriptionFile(m.ContentRoot, "description.bbcode") ?? ReadDescriptionFile(m.ContentRoot, "description.txt");
             m.IncludedTools = FindIncludedTools(m.ContentRoot);
             m.IncludedDocuments = FindIncludedDocuments(m.ContentRoot);
-            m.MinLauncherVersion = LauncherMetaReader.Read(m)?.minLauncherVersion?.Trim();
+            LauncherMeta launcherMeta = LauncherMetaReader.Read(m);
+            m.MinLauncherVersion = launcherMeta?.minLauncherVersion?.Trim();
+            m.Dependencies = launcherMeta?.dependencies ?? new List<LauncherDependency>();
+            m.Provides = launcherMeta?.provides ?? new List<LauncherProvision>();
+            m.Receives = launcherMeta?.receives ?? new List<string>();
             return m;
         }
 

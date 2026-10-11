@@ -69,6 +69,31 @@ namespace DW2ModLauncher.Tests
         }
 
         [Fact]
+        public void BuildLinks_NamesWhoIsOnTheOtherEnd_AmongTheEnabledMods()
+        {
+            ModInfo xl = new ModInfo { Id = "xl", DisplayName = "XL" };
+            xl.Provides.Add(new LauncherProvision { channel = "a.channel", files = new Dictionary<string, string> { ["one.json"] = "p/one.json", ["two.json"] = "p/two.json" } });
+            ModInfo cr = new ModInfo { Id = "cr", DisplayName = "CR" };
+            cr.Receives.Add("A.Channel");
+            cr.Receives.Add("lonely.channel");
+            cr.Dependencies.Add(new LauncherDependency { mod = "XL", required = true, minVersion = "1.36.0", loadAfter = true });
+            cr.Dependencies.Add(new LauncherDependency { mod = "ghost" });
+
+            string receiver = ModDetails.BuildLinks(cr, new[] { xl, cr });
+            string provider = ModDetails.BuildLinks(xl, new[] { xl, cr });
+            string providerAlone = ModDetails.BuildLinks(xl, new[] { xl });
+
+            Assert.Contains("Receives: A.Channel\nProviders: XL", receiver);
+            Assert.Contains("Receives: lonely.channel\nProviders: none enabled", receiver);
+            Assert.Contains("Depends on: XL (required, min 1.36.0, loads after)\nStatus: enabled", receiver);
+            Assert.Contains("Depends on: ghost (optional)\nStatus: not enabled", receiver);
+            Assert.Contains("Provides: a.channel\nReceivers: CR", provider);
+            Assert.DoesNotContain("one.json", provider);
+            Assert.Contains("Receivers: none enabled", providerAlone);
+            Assert.Equal("", ModDetails.BuildLinks(new ModInfo { Id = "plain" }, new ModInfo[0]));
+        }
+
+        [Fact]
         public void BuildText_ReflectsEnabledState_AndStripsBbCode()
         {
             ModInfo mod = new ModInfo { Description = "Hello [b]bold[/b] world", SourceName = "Src", Folder = "/f", ConflictFiles = new List<string>() };
