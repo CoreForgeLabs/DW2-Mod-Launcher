@@ -18,3 +18,4 @@ reconstruct it right before opening the PR. Fold several small related lines int
 - Mods can declare `dependencies` in dw2modlauncher.json (required or optional, a minimum version, load order the launcher enforces), and hand data to each other over named channels (`provides` / `receives`): the launcher merges every provider's JSON files in load order and gives the receiving DLL the result in a separate InitWithOptions argument
 - The details pane lists what a mod provides, receives and depends on, and which enabled mods are on the other end (nothing is shown for a mod that declares none)
 - Mods can declare `provides` and `receives` to have the mod loader automatically accumulate and transport data from providers to receivers for a named interface
+- The mod list subtitle and the details pane's source line now show just the mod's folder name or "Steam Workshop"
