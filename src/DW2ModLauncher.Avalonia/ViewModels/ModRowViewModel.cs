@@ -25,7 +25,7 @@ namespace DW2ModLauncher.Avalonia.ViewModels
         public ICommand ToggleCommand { get; }
 
         public string Name { get { return Mod.DisplayName ?? Mod.Id ?? "Unknown"; } }
-        /// <summary>Where the mod lives, as "mods\&lt;folder&gt;"; the subtitle under the source (local mods only), so same-named copies (XL, XL.bak) can be told apart.</summary>
+        /// <summary>Where the mod lives, as the folder name under the mods folder;the subtitle under the source (local mods only), so same-named copies (XL, XL.bak) can be told apart.</summary>
         public string FolderPath { get { return Mod.IsWorkshop || string.IsNullOrWhiteSpace(Mod.Folder) ? "" : ModDetails.SourceText(Mod, managedModsRoot); } }
         public bool HasFolderPath { get { return FolderPath.Length > 0; } }
         public string Source { get { return Mod.SourceName ?? ""; } }

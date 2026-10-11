@@ -57,9 +57,9 @@ namespace DW2ModLauncher.Tests
             ModInfo workshop = new ModInfo { SourceName = "Steam Workshop", Folder = Path.Combine(dir, "workshop", "123"), IsWorkshop = true, Id = "123" };
             char sep = Path.DirectorySeparatorChar;
 
-            Assert.Equal("mods" + sep + "junk", ModDetails.SourceText(local, root));
-            Assert.Equal("mods" + sep + "pack" + sep + "inner", ModDetails.SourceText(nested, root));
-            Assert.Equal("Steam Workshop" + sep + "123", ModDetails.SourceText(workshop, root));
+            Assert.Equal("junk", ModDetails.SourceText(local, root));
+            Assert.Equal("pack" + sep + "inner", ModDetails.SourceText(nested, root));
+            Assert.Equal("Steam Workshop", ModDetails.SourceText(workshop, root));
             Assert.Equal("Local", ModDetails.SourceText(new ModInfo { SourceName = "Local" }, root));
 
             Assert.Equal("123", ModDetails.WorkshopId(workshop));
