@@ -112,8 +112,8 @@
         </Border>
         <TextBlock Grid.Row="1" Classes="subheading" Margin="0,14,0,8" TextTrimming="CharacterEllipsis" Text="{Binding DetailTitle}" />
         <StackPanel Grid.Row="2" Spacing="2" Margin="0,0,0,10">
-          <SelectableTextBlock Foreground="{StaticResource Dw2Muted}" TextWrapping="Wrap" Text="{Binding DetailSource}" />
           <SelectableTextBlock Foreground="{StaticResource Dw2Muted}" TextWrapping="Wrap" Text="{Binding DetailWorkshopId}" />
+          <SelectableTextBlock Foreground="{StaticResource Dw2Muted}" TextWrapping="Wrap" Text="{Binding DetailSource}" />
         </StackPanel>
         <Border Grid.Row="3" IsVisible="{Binding HasProblems}" Classes="problems" Classes.conflict="{Binding ProblemsIsConflict}" Padding="10,8" Margin="0,0,0,8">
           <TextBlock TextWrapping="Wrap" FontWeight="SemiBold" Text="{Binding ProblemsText}" Foreground="{Binding $parent[Border].Tag}" />
