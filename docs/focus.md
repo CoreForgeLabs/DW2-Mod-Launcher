@@ -19,3 +19,4 @@ reconstruct it right before opening the PR. Fold several small related lines int
 - The details pane lists what a mod provides, receives and depends on, and which enabled mods are on the other end (nothing is shown for a mod that declares none)
 - Mods can declare `provides` and `receives` to have the mod loader automatically accumulate and transport data from providers to receivers for a named interface
 - The mod list subtitle and the details pane's source line now show just the mod's folder name or "Steam Workshop"
+- A file a mod promised on a data channel but the launcher could not hand over is now an error on the in-game status widget, not only a warning before launch

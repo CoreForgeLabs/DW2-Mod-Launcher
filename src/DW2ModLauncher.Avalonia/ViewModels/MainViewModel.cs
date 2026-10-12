@@ -82,7 +82,11 @@ namespace DW2ModLauncher.Avalonia.ViewModels
             ClearCommand = new RelayCommand(ClearAsync);
             EnableAllCommand = new RelayCommand(EnableAllAsync);
             PlayCommand = new RelayCommand(PlayOrStopAsync, () => gameState != GameState.Launching);
-            SetLaunchModeCommand = RelayCommand.WithParameter(mode => LaunchMode = (LaunchMode)Enum.Parse(typeof(LaunchMode), (string)mode));
+            SetLaunchModeCommand = RelayCommand.WithParameter(mode =>
+            {
+                LaunchMode = (LaunchMode)Enum.Parse(typeof(LaunchMode), (string)mode);
+                if (gameState == GameState.Idle) { var _ = PlayAsync(); }
+            });
             gameWatchTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
             gameWatchTimer.Tick += delegate { var _ = WatchGameAsync(); };
             gameWatchTimer.Start();
@@ -155,7 +159,7 @@ namespace DW2ModLauncher.Avalonia.ViewModels
             get { return T(gameState == GameState.Launching ? "LaunchingButton" : gameState == GameState.Running ? "StopButton" : LaunchMode == LaunchMode.Continue ? "PlayContinueButton" : LaunchMode == LaunchMode.NewGame ? "PlayNewGameButton" : "PlayButton"); }
         }
 
-        /// <summary>The Play button's remembered mode; picking one from the drop-down changes what the button does until another is picked.</summary>
+        /// <summary>The Play button's remembered mode; picking one from the drop-down launches in that mode right away and remembers it for the button.</summary>
         public LaunchMode LaunchMode
         {
             get { return Enum.IsDefined(settings.LaunchMode) ? settings.LaunchMode : LaunchMode.Run; }

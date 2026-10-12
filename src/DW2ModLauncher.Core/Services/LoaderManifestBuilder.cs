@@ -29,6 +29,7 @@ namespace DW2ModLauncher.Core.Services
             manifest.Fonts.AddRange(FontsOf(orderedEnabledMods));
             manifest.TextFiles.AddRange(TextFilesOf(orderedEnabledMods));
             manifest.GalactopediaReplacesVanilla = (orderedEnabledMods ?? new List<ModInfo>()).Any(ReplacesGalactopedia);
+            manifest.ChannelProblems.AddRange(ModChannels.Problems(orderedEnabledMods ?? new List<ModInfo>()));
             return manifest;
         }
 

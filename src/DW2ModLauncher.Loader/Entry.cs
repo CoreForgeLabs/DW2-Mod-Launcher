@@ -62,6 +62,8 @@ namespace DW2ModLauncher.Loader
             foreach (LoaderManifestEntry entry in manifest?.Entries ?? new System.Collections.Generic.List<LoaderManifestEntry>())
                 LoadOne(entry);
 
+            ReportChannelProblems(manifest);
+
             // After the mods, so the panel already lists all of them; a widget that cannot install changes nothing for the mods.
             try
             {
@@ -76,6 +78,19 @@ namespace DW2ModLauncher.Loader
             InstallFontBundles(manifest, logDir);
             InstallTextFiles(manifest, logDir);
             InstallTitleLookup(manifest, logDir);
+        }
+
+        // A mod promised a file on a channel and the launcher could not hand it over (missing, unreadable, not JSON): the receiving mod runs without it,
+        // so each problem is an error on the status widget as well as in the log, in the mod's name for the loader row.
+        private static void ReportChannelProblems(LoaderManifest manifest)
+        {
+            int i = 0;
+            foreach (string problem in manifest?.ChannelProblems ?? new System.Collections.Generic.List<string>())
+            {
+                string text = problem.TrimStart('⚠', ' ');
+                Log("ERROR mod data channel: " + text);
+                HookStatus.Failed("channel:" + i++, "Mod data channel: " + text, _logPath);
+            }
         }
 
         // Kept in its own method so a missing 0Harmony.dll fails here (caught, logged) instead of stopping the mods above from loading:
