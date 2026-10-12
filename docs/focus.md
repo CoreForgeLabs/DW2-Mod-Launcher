@@ -19,4 +19,8 @@ reconstruct it right before opening the PR. Fold several small related lines int
 - The details pane lists what a mod provides, receives and depends on, and which enabled mods are on the other end (nothing is shown for a mod that declares none)
 - Mods can declare `provides` and `receives` to have the mod loader automatically accumulate and transport data from providers to receivers for a named interface
 - The mod list subtitle and the details pane's source line now show just the mod's folder name or "Steam Workshop"
+- Mods record an `author` in dw2modlauncher.json: set your name in Settings and new or published mods are stamped with it
+- The mod list has a sortable Author column
+- The enabled checkbox and load-order number share one column (no number = not enabled), sorted by load order
+- The details pane can be collapsed with an arrow beside it and brought back with the same arrow
 - A file a mod promised on a data channel but the launcher could not hand over is now an error on the in-game status widget, not only a warning before launch

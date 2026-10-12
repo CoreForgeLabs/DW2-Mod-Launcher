@@ -20,7 +20,9 @@ namespace DW2ModLauncher.Core.Models
         public string SkippedLauncherVersion { get; set; } = "";
         public Dictionary<string, bool> SelectedMods { get; set; }
         public string ActiveProfile { get; set; }
-        /// <summary>Mod list sort column (0 name, 1 source, 2 state, 3 health, 4 load order); -1 = manual load order.</summary>
+        /// <summary>The user's name as a mod author; stamped into dw2modlauncher.json of mods they create or publish. Blank = no stamping.</summary>
+        public string AuthorName { get; set; } = "";
+        /// <summary>Mod list sort column (0 name, 1 source, 2 state, 3 health, 4 load order, 5 author); -1 = manual load order.</summary>
         public int SortColumn { get; set; }
         public bool SortAscending { get; set; }
         /// <summary>Main window's top-left corner when it last closed; null until first saved.</summary>

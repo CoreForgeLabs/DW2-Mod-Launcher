@@ -74,6 +74,9 @@ namespace DW2ModLauncher.Avalonia.ViewModels
         private string descriptionExtension = ModDescriptionFile.DefaultExtension;
         /// <summary>Extension for the description file of a mod that names none (a dot is added if missing); typed freely or picked from <see cref="DescriptionExtensions"/>.</summary>
         public string DescriptionExtension { get { return descriptionExtension; } set { Set(ref descriptionExtension, value); } }
+        private string authorName = "";
+        /// <summary>The user's author name, stamped into mods they create or publish.</summary>
+        public string AuthorName { get { return authorName; } set { Set(ref authorName, value); } }
         public List<string> DescriptionExtensions { get; } = new List<string> { ".bbcode", ".txt" };
         private bool refreshingProfiles;
         /// <summary>
@@ -128,6 +131,7 @@ namespace DW2ModLauncher.Avalonia.ViewModels
             ManagedRoot = s.ManagedModsRoot ?? "";
             LogFolder = s.LogDirectory ?? "";
             DescriptionExtension = ModDescriptionFile.NormalizeExtension(s.DescriptionExtension);
+            AuthorName = s.AuthorName ?? "";
         }
 
         /// <summary>Writes the editable fields into the settings object without validating (used right before launch).</summary>
@@ -162,8 +166,11 @@ namespace DW2ModLauncher.Avalonia.ViewModels
             string extension = ModDescriptionFile.NormalizeExtension(descriptionExtension);
             DescriptionExtension = extension;
             bool pathsSame = game == s.GameRoot && workshop == s.WorkshopRoot && managed == s.ManagedModsRoot && log == s.LogDirectory;
-            if (pathsSame && extension == ModDescriptionFile.NormalizeExtension(s.DescriptionExtension)) return true;
+            string author = (authorName ?? "").Trim();
+            AuthorName = author;
+            if (pathsSame && extension == ModDescriptionFile.NormalizeExtension(s.DescriptionExtension) && author == (s.AuthorName ?? "")) return true;
             s.DescriptionExtension = extension;
+            s.AuthorName = author;
             if (pathsSame)
             {
                 main.SaveSettings();

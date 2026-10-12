@@ -142,6 +142,7 @@ namespace DW2ModLauncher.Core.Services
             m.IncludedDocuments = FindIncludedDocuments(m.ContentRoot);
             LauncherMeta launcherMeta = LauncherMetaReader.Read(m);
             m.MinLauncherVersion = launcherMeta?.minLauncherVersion?.Trim();
+            m.Author = launcherMeta?.author?.Trim();
             m.Dependencies = launcherMeta?.dependencies ?? new List<LauncherDependency>();
             m.Provides = launcherMeta?.provides ?? new List<LauncherProvision>();
             m.Receives = launcherMeta?.receives ?? new List<string>();

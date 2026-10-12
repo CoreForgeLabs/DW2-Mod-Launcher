@@ -43,6 +43,34 @@ namespace DW2ModLauncher.Avalonia.Views
                     main.RevealSelectionRequested += delegate { global::Avalonia.Threading.Dispatcher.UIThread.Post(ScrollToSelection, global::Avalonia.Threading.DispatcherPriority.Background); };
             };
             ModList.DoubleTapped += delegate { if (DataContext is MainViewModel m && m.ModSettingsCommand.CanExecute(null)) m.ModSettingsCommand.Execute(null); };
+            DetailsToggle.Click += delegate { SetDetailsCollapsed(DetailsPane.IsVisible); };
+        }
+
+        private GridLength listWidthBeforeCollapse = new GridLength(7, GridUnitType.Star);
+        private GridLength detailsWidthBeforeCollapse = new GridLength(3, GridUnitType.Star);
+
+        /// <summary>Hides the details pane and gives its room to the list, or brings it back at the width it had.</summary>
+        private void SetDetailsCollapsed(bool collapsed)
+        {
+            ColumnDefinition ListColumn = RootGrid.ColumnDefinitions[0];
+            ColumnDefinition DetailsColumn = RootGrid.ColumnDefinitions[2];
+            if (collapsed)
+            {
+                listWidthBeforeCollapse = ListColumn.Width;
+                detailsWidthBeforeCollapse = DetailsColumn.Width;
+                ListColumn.Width = new GridLength(1, GridUnitType.Star);
+                DetailsColumn.Width = new GridLength(0);
+            }
+            else
+            {
+                ListColumn.Width = listWidthBeforeCollapse;
+                DetailsColumn.Width = detailsWidthBeforeCollapse;
+            }
+            DetailsPane.IsVisible = !collapsed;
+            DetailsSplitter.IsVisible = !collapsed;
+            // The toggle sits over the right end of the row; with the pane gone the list's toolbar makes room for it.
+            ToolbarGrid.Margin = new Thickness(0, 0, collapsed ? DetailsToggle.Bounds.Width + 10 : 0, 10);
+            DetailsToggleIcon.Data = Geometry.Parse(collapsed ? "M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" : "M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z");
         }
 
         private void ScrollToSelection()
