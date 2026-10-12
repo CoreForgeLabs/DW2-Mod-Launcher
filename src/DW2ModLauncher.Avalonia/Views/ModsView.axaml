@@ -3,11 +3,16 @@
              xmlns:vm="using:DW2ModLauncher.Avalonia.ViewModels"
              x:Class="DW2ModLauncher.Avalonia.Views.ModsView"
              x:DataType="vm:MainViewModel">
-  <Grid ColumnDefinitions="7*,Auto,3*" Margin="14">
+  <Grid Name="RootGrid" ColumnDefinitions="7*,Auto,3*" Margin="14" Grid.IsSharedSizeScope="True">
 
-    <!-- List -->
-    <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*">
-      <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto,Auto,Auto,Auto" Margin="0,0,0,10">
+    <!-- List. Its toolbar row shares a height with the empty row above the splitter and details pane, so they start level with the list. -->
+    <Grid Grid.Column="0">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" SharedSizeGroup="Toolbar" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <Grid Name="ToolbarGrid" Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto,Auto,Auto,Auto" Margin="0,0,0,10">
         <Button Grid.Column="0" Command="{Binding RefreshCommand}" Margin="0,0,10,0" ToolTip.Tip="{Binding L[RefreshModsTooltip]}">
           <!-- "sync" icon (two circular arrows), Material Design Icons, Apache-2.0 -->
           <PathIcon Width="16" Height="16" Data="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" />
@@ -44,11 +49,11 @@
         </Button>
       </Grid>
 
-      <Grid Grid.Row="1" ColumnDefinitions="40,76,76,*,150" Background="{StaticResource Dw2Steel}">
-        <Button Classes="header" Grid.Column="0" Command="{Binding SortCommand}" CommandParameter="4" Content="#" ToolTip.Tip="{Binding L[LoadOrder]}" />
-        <Button Classes="header" Grid.Column="1" Command="{Binding SortCommand}" CommandParameter="2" Content="{Binding L[ModState]}" />
-        <Button Classes="header" Grid.Column="2" Command="{Binding SortCommand}" CommandParameter="3" Content="{Binding L[Health]}" />
-        <Button Classes="header" Grid.Column="3" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="0" Content="{Binding L[ModName]}" Padding="10,6" />
+      <Grid Grid.Row="1" ColumnDefinitions="90,76,*,110,150" Background="{StaticResource Dw2Steel}">
+        <Button Classes="header" Grid.Column="0" Command="{Binding SortCommand}" CommandParameter="4" Content="{Binding L[ModState]}" ToolTip.Tip="{Binding L[LoadOrder]}" />
+        <Button Classes="header" Grid.Column="1" Command="{Binding SortCommand}" CommandParameter="3" Content="{Binding L[Health]}" />
+        <Button Classes="header" Grid.Column="2" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="0" Content="{Binding L[ModName]}" Padding="10,6" />
+        <Button Classes="header" Grid.Column="3" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="5" Content="{Binding L[Author]}" />
         <Button Classes="header" Grid.Column="4" HorizontalContentAlignment="Left" Command="{Binding SortCommand}" CommandParameter="1" Content="{Binding L[Source]}" />
       </Grid>
 
@@ -70,16 +75,19 @@
           </ListBox.ContextMenu>
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:ModRowViewModel">
-              <Grid ColumnDefinitions="40,76,76,*,150" MinHeight="54">
-                <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource Dw2Gold}" Text="{Binding LoadOrder}" />
-                <Button Classes="glyph" Classes.on="{Binding Enabled}" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"
-                        Command="{Binding ToggleCommand}" CommandParameter="{Binding}" Content="{Binding StateGlyph}" />
-                <TextBlock Grid.Column="2" Classes="health" Classes.conflict="{Binding IsConflict}" Classes.caution="{Binding IsCaution}" Classes.ok="{Binding IsOk}"
+              <Grid ColumnDefinitions="90,76,*,110,150" MinHeight="54">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <Button Classes="glyph" Classes.on="{Binding Enabled}" VerticalAlignment="Center"
+                          Command="{Binding ToggleCommand}" CommandParameter="{Binding}" Content="{Binding StateGlyph}" />
+                  <TextBlock MinWidth="22" VerticalAlignment="Center" Foreground="{StaticResource Dw2Gold}" Text="{Binding LoadOrderNumber}" />
+                </StackPanel>
+                <TextBlock Grid.Column="1" Classes="health" Classes.conflict="{Binding IsConflict}" Classes.caution="{Binding IsCaution}" Classes.ok="{Binding IsOk}"
                            HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Health}" />
-                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" Margin="4,0">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" Margin="4,0">
                   <Image Source="{Binding Thumbnail}" Width="72" Height="48" Stretch="Uniform" />
                   <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                 </StackPanel>
+                <TextBlock Grid.Column="3" Margin="6,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Text="{Binding Author}" />
                 <StackPanel Grid.Column="4" Margin="6,0" VerticalAlignment="Center">
                   <TextBlock Text="{Binding Source}" TextTrimming="CharacterEllipsis" />
                   <TextBlock Classes="muted" FontSize="11" Text="{Binding FolderPath}" IsVisible="{Binding HasFolderPath}" TextTrimming="PathSegmentEllipsis" />
@@ -99,10 +107,26 @@
       </Grid>
     </Grid>
 
-    <GridSplitter Grid.Column="1" Width="8" Background="Transparent" ResizeDirection="Columns" />
+    <Grid Grid.Column="1" Width="14">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" SharedSizeGroup="Toolbar" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <GridSplitter Name="DetailsSplitter" Grid.Row="1" Background="Transparent" ResizeDirection="Columns" />
+    </Grid>
+
+    <!-- Collapse / expand the details pane: top right, on the toolbar's row; stays put when the pane is gone. -->
+    <Button Name="DetailsToggle" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Right" VerticalAlignment="Top" Padding="10,6" ToolTip.Tip="{Binding L[ToggleDetailsTooltip]}">
+      <PathIcon Name="DetailsToggleIcon" Width="16" Height="16" Data="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+    </Button>
 
     <!-- Details -->
-    <Border Grid.Column="2" Background="{StaticResource Dw2PanelAlt}" BorderBrush="{StaticResource Dw2Blue}" BorderThickness="1" Padding="14">
+    <Grid Grid.Column="2">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" SharedSizeGroup="Toolbar" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+    <Border Name="DetailsPane" Grid.Row="1" Background="{StaticResource Dw2PanelAlt}" BorderBrush="{StaticResource Dw2Blue}" BorderThickness="1" Padding="14">
       <Panel>
       <TextBlock IsVisible="{Binding !HasSelection}" Text="{Binding L[SelectModForDetails]}" Foreground="{StaticResource Dw2Gold}"
                  FontSize="18" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -127,5 +151,6 @@
       </Grid>
       </Panel>
     </Border>
+    </Grid>
   </Grid>
 </UserControl>

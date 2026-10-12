@@ -43,6 +43,8 @@ namespace DW2ModLauncher.Core.Models
         public List<string> IncludedDocuments { get; set; }
         /// <summary>dw2modlauncher.json "minLauncherVersion", or null/empty when the mod names no floor.</summary>
         public string MinLauncherVersion { get; set; }
+        /// <summary>dw2modlauncher.json "author", or null/empty when the mod names none.</summary>
+        public string Author { get; set; }
         /// <summary>dw2modlauncher.json "dependencies" (empty when the mod names none).</summary>
         public List<LauncherDependency> Dependencies { get; set; } = new List<LauncherDependency>();
         /// <summary>dw2modlauncher.json "provides" (empty when the mod supplies nothing).</summary>

@@ -29,6 +29,7 @@ namespace DW2ModLauncher.Avalonia.ViewModels
         public string FolderPath { get { return Mod.IsWorkshop || string.IsNullOrWhiteSpace(Mod.Folder) ? "" : ModDetails.SourceText(Mod, managedModsRoot); } }
         public bool HasFolderPath { get { return FolderPath.Length > 0; } }
         public string Source { get { return Mod.SourceName ?? ""; } }
+        public string Author { get { return Mod.Author ?? ""; } }
 
         /// <summary>Re-reads fields the Workshop check or a language change can alter on the underlying mod.</summary>
         public void RefreshFromMod()
@@ -68,9 +69,10 @@ namespace DW2ModLauncher.Avalonia.ViewModels
         public int LoadOrderIndex
         {
             get { return loadOrderIndex; }
-            set { if (Set(ref loadOrderIndex, value)) Raise(nameof(LoadOrder)); }
+            set { if (Set(ref loadOrderIndex, value)) Raise(nameof(LoadOrderNumber)); }
         }
-        public string LoadOrder { get { return loadOrderIndex < 0 ? "—" : (loadOrderIndex + 1).ToString(System.Globalization.CultureInfo.InvariantCulture); } }
+        /// <summary>The load-order number next to the checkbox; blank for a mod that is not enabled.</summary>
+        public string LoadOrderNumber { get { return loadOrderIndex < 0 ? "" : (loadOrderIndex + 1).ToString(System.Globalization.CultureInfo.InvariantCulture); } }
 
         /// <summary>Small preview for the list; loaded on first use (rows are only realised when scrolled into view).</summary>
         public Bitmap Thumbnail

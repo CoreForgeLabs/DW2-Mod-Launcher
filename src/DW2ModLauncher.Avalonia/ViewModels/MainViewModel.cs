@@ -62,7 +62,8 @@ namespace DW2ModLauncher.Avalonia.ViewModels
             settingsStore = new LauncherSettingsStore(Path.Combine(appRoot, "launcher_settings.json"));
             settings = settingsStore.Load();
             NormalizeSettings();
-            sortColumn = settings.SortColumn >= 0 && settings.SortColumn <= 4 ? settings.SortColumn : -1;
+            // A saved 2 was the old separate "enabled" column, which is now part of column 4.
+            sortColumn = settings.SortColumn == 2 ? 4 : settings.SortColumn >= 0 && settings.SortColumn <= 5 ? settings.SortColumn : -1;
             sortAscending = settings.SortAscending;
             if (string.IsNullOrWhiteSpace(settings.ManagedModsRoot))
                 settings.ManagedModsRoot = string.IsNullOrWhiteSpace(settings.GameRoot) ? "" : Path.Combine(settings.GameRoot, "mods");
@@ -456,7 +457,7 @@ namespace DW2ModLauncher.Avalonia.ViewModels
             ShowDetails();
         }
 
-        // ---- sorting (column numbers match the header buttons: 0 name, 1 source, 2 state, 3 health, 4 load order)
+        // ---- sorting (column numbers match the header buttons: 0 name, 1 source, 3 health, 4 enabled + load order, 5 author; 2 was a separate state column, now merged into 4)
 
         private void SortBy(int column)
         {
@@ -480,8 +481,8 @@ namespace DW2ModLauncher.Avalonia.ViewModels
             switch (sortColumn)
             {
                 case 1: key = r => r.Source; break;
-                case 2: key = r => r.Enabled ? 1 : 0; break;
                 case 3: key = r => r.HealthSeverity; break;
+                case 5: key = r => r.Author; break;
                 case 4: key = r => r.LoadOrderIndex < 0 ? int.MaxValue : r.LoadOrderIndex; break;
                 default: key = r => r.Name; break;
             }
@@ -824,6 +825,7 @@ namespace DW2ModLauncher.Avalonia.ViewModels
             try
             {
                 string folder = LocalModManager.Create(settings.ManagedModsRoot, name, localization ? T("LocalizationModDescription") : "");
+                LauncherMetaWriter.StampAuthor(folder, settings.AuthorName, true);
                 if (localization)
                 {
                     IsBusy = true;
@@ -1172,6 +1174,15 @@ namespace DW2ModLauncher.Avalonia.ViewModels
                     RollBackVersion(mod, versionBefore, versionWritten);
                     return;
                 }
+            }
+
+            try { LauncherMetaWriter.StampAuthor(mod.Folder, settings.AuthorName, true); }
+            catch (Exception ex)
+            {
+                Logger.LogException("Stamp author in " + mod.Folder, ex);
+                RollBackVersion(mod, versionBefore, versionWritten);
+                await Dialogs.ShowMessageAsync(T("AuthorStampFailed", ex.Message), "DW2 Mod Launcher");
+                return;
             }
 
             publishRunning = true;
