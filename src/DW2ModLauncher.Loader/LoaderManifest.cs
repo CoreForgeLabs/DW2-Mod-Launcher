@@ -13,6 +13,7 @@ namespace DW2ModLauncher.Loader
         public List<LoaderManifestFont> Fonts { get; set; } = new List<LoaderManifestFont>();
         public List<LoaderManifestTextFile> TextFiles { get; set; } = new List<LoaderManifestTextFile>();
         public bool GalactopediaReplacesVanilla { get; set; }
+        public List<string> ChannelProblems { get; set; } = new List<string>();
         public string LogDirectory { get; set; }
     }
 

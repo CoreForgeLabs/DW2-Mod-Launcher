@@ -56,6 +56,23 @@ namespace DW2ModLauncher.Tests
         }
 
         [Fact]
+        public void Build_CarriesChannelProblems_ForAFileAProviderCouldNotSupply()
+        {
+            string dir = MakeModDir();
+            try
+            {
+                ModInfo provider = ModAt(dir);
+                provider.Provides.Add(new LauncherProvision { channel = "some.channel", files = new Dictionary<string, string> { ["x.json"] = "missing.json" } });
+
+                LoaderManifest manifest = LoaderManifestBuilder.Build(new List<ModInfo> { provider });
+
+                Assert.Single(manifest.ChannelProblems);
+                Assert.Contains("missing.json", manifest.ChannelProblems[0]);
+            }
+            finally { Directory.Delete(dir, true); }
+        }
+
+        [Fact]
         public void Build_IgnoresDlls_ThatAreNotInjectionDlls()
         {
             string dir = MakeModDir();
