@@ -53,6 +53,14 @@ namespace DW2ModLauncher.Loader
                 return;
             }
 
+            // The data hooks do not depend on the code mods, so they go first: the game does not wait for this method and reads
+            // its XML data about a second after it starts, and a mod entry point that takes a few seconds (loading its own
+            // Harmony patches, say) must not make that data bypass the XML patches.
+            InstallXmlPatching(manifest, logDir);
+            InstallFontBundles(manifest, logDir);
+            InstallTextFiles(manifest, logDir);
+            InstallTitleLookup(manifest, logDir);
+
             foreach (LoaderManifestEntry entry in manifest?.Entries ?? new System.Collections.Generic.List<LoaderManifestEntry>())
                 LoadOne(entry);
 
@@ -65,11 +73,6 @@ namespace DW2ModLauncher.Loader
             {
                 Log("ERROR status widget not installed: " + ex);
             }
-
-            InstallXmlPatching(manifest, logDir);
-            InstallFontBundles(manifest, logDir);
-            InstallTextFiles(manifest, logDir);
-            InstallTitleLookup(manifest, logDir);
         }
 
         // Kept in its own method so a missing 0Harmony.dll fails here (caught, logged) instead of stopping the mods above from loading:
